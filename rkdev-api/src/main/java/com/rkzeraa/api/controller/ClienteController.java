@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.rkzeraa.domain.model.Cliente;
 import com.rkzeraa.domain.repository.ClienteRepository;
+import com.rkzeraa.domain.service.CadastroClienteService;
 
 import lombok.AllArgsConstructor;
 
@@ -27,6 +28,7 @@ import lombok.AllArgsConstructor;
 public class ClienteController {
 	
 	private ClienteRepository clienteRepository;
+	private CadastroClienteService cadastroClienteService;
 	
 	@GetMapping
 	public List<Cliente> listar() {
@@ -38,7 +40,7 @@ public class ClienteController {
 		
 		
 		return clienteRepository.findById(clienteId)
-				//.map(cliente -> ResponseEntity.ok(cliente))
+//				.map(cliente -> ResponseEntity.ok(cliente))
 				.map(ResponseEntity::ok)
 				.orElse(ResponseEntity.notFound().build());
 	}
@@ -46,7 +48,7 @@ public class ClienteController {
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
 	public Cliente adicionar(@Valid @RequestBody Cliente cliente) {
-		return clienteRepository.save(cliente);
+		return cadastroClienteService.salvar(cliente);
 	}
 	
 	@PutMapping("/{clienteId}")
@@ -58,7 +60,7 @@ public class ClienteController {
 		}
 		
 		cliente.setId(clienteId);
-		cliente = clienteRepository.save(cliente);
+		cliente = cadastroClienteService.salvar(cliente);
 		
 		return ResponseEntity.ok(cliente);
 	}
@@ -70,7 +72,7 @@ public class ClienteController {
 			return ResponseEntity.notFound().build();
 		}
 		
-		clienteRepository.deleteById(clienteId);
+		cadastroClienteService.excluir(clienteId);
 		
 		return ResponseEntity.noContent().build();
 	}
