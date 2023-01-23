@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.rkzeraa.api.model.DestinatarioResponse;
+import com.rkzeraa.api.model.EntregaResponse;
 import com.rkzeraa.domain.model.Entrega;
 import com.rkzeraa.domain.repository.EntregaRepository;
 import com.rkzeraa.domain.service.SolicitacaoEntregaService;
@@ -40,9 +42,24 @@ public class EntregaController {
 	}
 	
 	@GetMapping("/{entregaId}")
-	public ResponseEntity<Entrega> buscar(@PathVariable Long entregaId) {
+	public ResponseEntity<EntregaResponse> buscar(@PathVariable Long entregaId) {
 		return entregaRepository.findById(entregaId)
-				.map(ResponseEntity::ok)
-				.orElse(ResponseEntity.notFound().build());
+				.map(entrega -> {
+					EntregaResponse entregaResponse = new EntregaResponse();
+					entregaResponse.setId(entrega.getId());
+					entregaResponse.setNomeCliente(entrega.getCliente().getNome());
+					entregaResponse.setDestinatario(new DestinatarioResponse());
+					entregaResponse.getDestinatario().setNome(entrega.getDestinatario().getNome());
+					entregaResponse.getDestinatario().setLogradouro(entrega.getDestinatario().getLogradouro());
+					entregaResponse.getDestinatario().setNumero(entrega.getDestinatario().getNumero());
+					entregaResponse.getDestinatario().setComplemento(entrega.getDestinatario().getComplemento());
+					entregaResponse.getDestinatario().setBairro(entrega.getDestinatario().getBairro());
+					entregaResponse.setTaxa(entrega.getTaxa());
+					entregaResponse.setStatus(entrega.getStatus());
+					entregaResponse.setDataPedido(entrega.getDataPedido());
+					entregaResponse.setDataFinalizacao(entrega.getDataFinalizacao());
+					
+					return ResponseEntity.ok(entregaResponse);
+				}).orElse(ResponseEntity.notFound().build());
 	}
 }
