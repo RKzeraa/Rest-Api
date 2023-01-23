@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -19,6 +20,7 @@ import com.rkzeraa.api.model.EntregaResponse;
 import com.rkzeraa.api.model.input.EntregaInput;
 import com.rkzeraa.domain.model.Entrega;
 import com.rkzeraa.domain.repository.EntregaRepository;
+import com.rkzeraa.domain.service.FinalizacaoEntregaService;
 import com.rkzeraa.domain.service.SolicitacaoEntregaService;
 
 import lombok.AllArgsConstructor;
@@ -30,6 +32,7 @@ public class EntregaController {
 	
 	private EntregaRepository entregaRepository;
 	private SolicitacaoEntregaService solicitacaoEntregaService;
+	private FinalizacaoEntregaService finalizacaoEntregaService;
 	private EntregaMapper entregaMapper;
 	
 	
@@ -39,6 +42,12 @@ public class EntregaController {
 		Entrega novaEntrega = entregaMapper.toEntity(entregaInput);
 		Entrega entregaSolicitada = solicitacaoEntregaService.solicitar(novaEntrega);
 		return entregaMapper.toModel(entregaSolicitada);
+	}
+	
+	@PutMapping("/{entregaId}/finalizacao")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void finalizar(@PathVariable Long entregaId) {
+		finalizacaoEntregaService.finalizar(entregaId);
 	}
 	
 	@GetMapping
