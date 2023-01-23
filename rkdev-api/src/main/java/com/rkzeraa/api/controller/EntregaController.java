@@ -14,8 +14,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.rkzeraa.api.model.DestinatarioResponse;
+import com.rkzeraa.api.mapper.EntregaMapper;
 import com.rkzeraa.api.model.EntregaResponse;
+import com.rkzeraa.api.model.input.EntregaInput;
 import com.rkzeraa.domain.model.Entrega;
 import com.rkzeraa.domain.repository.EntregaRepository;
 import com.rkzeraa.domain.service.SolicitacaoEntregaService;
@@ -29,37 +30,26 @@ public class EntregaController {
 	
 	private EntregaRepository entregaRepository;
 	private SolicitacaoEntregaService solicitacaoEntregaService;
+	private EntregaMapper entregaMapper;
+	
 	
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	public Entrega solicitar(@Valid @RequestBody Entrega entrega) {
-		return solicitacaoEntregaService.solicitar(entrega);
+	public EntregaResponse solicitar(@Valid @RequestBody EntregaInput entregaInput) {
+		Entrega novaEntrega = entregaMapper.toEntity(entregaInput);
+		Entrega entregaSolicitada = solicitacaoEntregaService.solicitar(novaEntrega);
+		return entregaMapper.toModel(entregaSolicitada);
 	}
 	
 	@GetMapping
-	public List<Entrega> listar() {
-		return entregaRepository.findAll();
+	public List<EntregaResponse> listar() {
+		return entregaMapper.toCollectionModel(entregaRepository.findAll());
 	}
 	
 	@GetMapping("/{entregaId}")
 	public ResponseEntity<EntregaResponse> buscar(@PathVariable Long entregaId) {
 		return entregaRepository.findById(entregaId)
-				.map(entrega -> {
-					EntregaResponse entregaResponse = new EntregaResponse();
-					entregaResponse.setId(entrega.getId());
-					entregaResponse.setNomeCliente(entrega.getCliente().getNome());
-					entregaResponse.setDestinatario(new DestinatarioResponse());
-					entregaResponse.getDestinatario().setNome(entrega.getDestinatario().getNome());
-					entregaResponse.getDestinatario().setLogradouro(entrega.getDestinatario().getLogradouro());
-					entregaResponse.getDestinatario().setNumero(entrega.getDestinatario().getNumero());
-					entregaResponse.getDestinatario().setComplemento(entrega.getDestinatario().getComplemento());
-					entregaResponse.getDestinatario().setBairro(entrega.getDestinatario().getBairro());
-					entregaResponse.setTaxa(entrega.getTaxa());
-					entregaResponse.setStatus(entrega.getStatus());
-					entregaResponse.setDataPedido(entrega.getDataPedido());
-					entregaResponse.setDataFinalizacao(entrega.getDataFinalizacao());
-					
-					return ResponseEntity.ok(entregaResponse);
-				}).orElse(ResponseEntity.notFound().build());
+				.map(entrega -> ResponseEntity.ok(entregaMapper.toModel(entrega)))
+				.orElse(ResponseEntity.notFound().build());
 	}
 }
